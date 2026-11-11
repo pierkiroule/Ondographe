@@ -29,7 +29,7 @@ function pointsFor(item,t=0){
  x+=energy*25*f*Math.sin(phase+dy*.017+seed);y+=energy*25*f*Math.cos(phase+dx*.017+seed);
  for(const g of gestures){const ax=x-g.x,ay=y-g.y,w=Math.exp(-(ax*ax+ay*ay)/(g.radius*g.radius));x+=g.dx*w;y+=g.dy*w;}
  return[x,y];
- })));
+ }));
 }
 const path=line=>line.map(([x,y],i)=>(i?"L":"M")+x.toFixed(2)+" "+y.toFixed(2)).join(" ");
 function svgFor(item,animated=false,mono=false){
