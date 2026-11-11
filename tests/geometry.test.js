@@ -15,3 +15,6 @@ test('spacing changes line count and center translates the whole field',()=>{
 test('older saved works have usable center, spacing and motif defaults',()=>{
  const old={notes:['🌊'],params:{density:50},seed:1,gestures:[]};assert.equal(motifFor(old),'arch');assert.deepEqual(centerFor(old),[300,300]);assert.ok(pointsFor(old).flat(2).every(Number.isFinite));
 });
+test('wave count modifies all motif families without changing topology',()=>{
+ for(const [motif] of MOTIFS){const a=pointsFor({...item,notes:[motif],params:{...item.params,waves:2}}),b=pointsFor({...item,notes:[motif],params:{...item.params,waves:8}});assert.equal(a.length,b.length);assert.notDeepEqual(a,b)}
+});
