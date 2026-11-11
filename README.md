@@ -75,3 +75,12 @@ vers l’extérieur) ou Tracé (dessin progressif des contours). Les aperçus et
 exports animés suivent ce choix ; le SVG fixe reste entièrement visible.
 Le labo propose par défaut une apparition Écho. Les anciennes clés de 30 secondes
 sont recalées proportionnellement sur la boucle de 10 secondes à la lecture.
+
+Dans Composer, choisir le format de page : A4 portrait/paysage (en mm), carré,
+Instagram portrait, Story/Reel, publication ou couverture LinkedIn, bannière ou
+dimensions personnalisées en px/mm. L’échelle, la rotation et les positions
+horizontale/verticale du motif se règlent indépendamment du fond. Le pinceau et
+le déplacement du centre tiennent compte de ce placement. L’export conserve les
+dimensions physiques, le rapport de page et le placement, en fixe comme en animé.
+Les dimensions personnalisées sont limitées à 1–20 000 unités par côté ; changer
+l’unité réinterprète les valeurs saisies dans l’unité choisie.
