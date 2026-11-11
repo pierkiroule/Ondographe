@@ -1,5 +1,5 @@
 export const TRACKS = { energy: 'Vitalité', organic: 'Organicité', complexity: 'Complexité', breath: 'Respiration', driftX: 'Dérive X', driftY: 'Dérive Y', turn: 'Rotation' };
-export const DURATION = 30;
+export const DURATION = 10;
 export function easing(t, curve = [0.42, 0, 0.58, 1]) {
   const [x1,y1,x2,y2] = curve;
   const cubic = (u,a,b) => 3*(1-u)**2*u*a + 3*(1-u)*u*u*b + u**3;
@@ -16,9 +16,15 @@ export function valueAt(keys, time, fallback) {
   }
   return keys.at(-1).value;
 }
+export function normalizeAnimation(animation={}){
+ const end=Math.max(DURATION,...Object.values(animation).flatMap(keys=>keys.map(k=>k.time)));
+ const scale=DURATION/end;
+ return Object.fromEntries(Object.entries(animation).map(([id,keys])=>[id,keys.map(k=>({...k,time:k.time*scale}))]));
+}
 export function animatedItem(item,time) {
+  const animation=normalizeAnimation(item.animation);
   const params={...item.params};
-  for(const key of Object.keys(TRACKS))params[key]=valueAt(item.animation?.[key],time,params[key]??50);
+  for(const key of Object.keys(TRACKS))params[key]=valueAt(animation[key],time,params[key]??50);
   return {...item,params};
 }
 
@@ -30,7 +36,7 @@ export const PRESETS=[
  {id:'ripple',name:'Ondulation',description:'Une vague traverse les contours.'}
 ];
 export function presetAnimation(id,params){
- const keys=(values)=>values.map((value,i)=>({time:i*30/(values.length-1),value,curve:[.42,0,.58,1]}));
+ const keys=(values)=>values.map((value,i)=>({time:i*DURATION/(values.length-1),value,curve:[.42,0,.58,1]}));
  switch(id){
   case 'breathe':return {breath:keys([50,75,50])};
   case 'drift':return {driftX:keys([50,65,50,35,50])};

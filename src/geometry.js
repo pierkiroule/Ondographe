@@ -1,3 +1,4 @@
+import {DURATION} from './animation.js';
 export const MOTIFS=[['whorl','Tourbillon'],['loop','Boucle'],['double','Double foyer'],['arch','Arche'],['saddle','Selle'],['rosette','Rosace']];
 export function motifFor(item){
  const id=item.notes?.[0];
@@ -8,7 +9,7 @@ export function pointsFor(item,t=0){
  const {params:p,seed=1,gestures=[]}=item;
  const motif=motifFor(item),gap=p.spacing??(5+(100-(p.density??50))*.12),hole=p.hollow??35;
  const n=Math.max(4,Math.floor((300-hole)/gap)),P=192,[cx,cy]=centerFor(item);
- const phase=t/30*Math.PI*2,o=(p.organic??65)/100,c=(p.complexity??45)/100,e=(p.energy??40)/100;
+ const phase=t/DURATION*Math.PI*2,o=(p.organic??65)/100,c=(p.complexity??45)/100,e=(p.energy??40)/100;
  const rotation=Math.sin(seed)*.2,waves=p.waves??3;
  return Array.from({length:n},(_,i)=>Array.from({length:P+1},(_,j)=>{
   const u=j/P,a=u*Math.PI*2,r=hole+gap*(i+1);

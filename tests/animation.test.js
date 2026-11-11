@@ -16,7 +16,7 @@ test('Bezier easing changes the transition while preserving endpoints',()=>{
 });
 test('animation keeps topology and source parameters intact',()=>{
  const item={params:{energy:40,organic:65,complexity:45,density:50},animation:{energy:[{time:0,value:0,curve:[0,0,1,1]},{time:30,value:100}]}};
- const evaluated=animatedItem(item,15);
+ const evaluated=animatedItem(item,5);
  assert.ok(Math.abs(evaluated.params.energy-50)<.001);
  assert.equal(evaluated.params.density,50);
  assert.equal(item.params.energy,40);

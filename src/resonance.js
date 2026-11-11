@@ -1,4 +1,4 @@
-import {presetAnimation} from './animation.js';
+import {presetAnimation,DURATION} from './animation.js';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function analyzeSamples(data,sampleRate){
  if(!data?.length||!sampleRate)throw Error('Le son est vide.');
@@ -12,8 +12,8 @@ export function soundProposal(base,features,name){
  const {rms,brightness,variation,seed,envelope}=features;
  const params={...base.params,energy:clamp(Math.round(rms*250),8,90),organic:clamp(Math.round(35+variation*180),20,95),complexity:clamp(Math.round(brightness*200+25),15,95),waves:clamp(Math.round(2+brightness*16),2,10),spacing:clamp(Math.round(16-rms*20-brightness*8),5,20),hollow:clamp(Math.round(25+rms*60),15,70),centerX:300,centerY:300};
  const preset=brightness>.22?'ripple':variation>.12?'orbit':'breathe';
- const work={...base,seed,name:name.replace(/\.[^.]+$/,'')||'Résonance sonore',notes:[brightness>.3?'rosette':brightness>.12?'double':rms>.15?'arch':'whorl'],params,gestures:[],kind:'animé',preset,animation:presetAnimation(preset,params),sourceAudio:{name,duration:features.duration,rms,brightness}};
- const max=Math.max(...envelope,.001);work.animation.energy=envelope.map((v,i)=>({time:i*30/16,value:clamp(Math.round(15+v/max*65),5,95),curve:[.42,0,.58,1]}));work.animation.energy.push({...work.animation.energy[0],time:30});
+ const work={...base,seed,name:name.replace(/\.[^.]+$/,'')||'Résonance sonore',notes:[brightness>.3?'rosette':brightness>.12?'double':rms>.15?'arch':'whorl'],params,gestures:[],kind:'animé',appearance:'echo',preset,animation:presetAnimation(preset,params),sourceAudio:{name,duration:features.duration,rms,brightness}};
+ const max=Math.max(...envelope,.001);work.animation.energy=envelope.map((v,i)=>({time:i*DURATION/16,value:clamp(Math.round(15+v/max*65),5,95),curve:[.42,0,.58,1]}));work.animation.energy.push({...work.animation.energy[0],time:DURATION});
  const {fixedSnapshot,...rest}=work;
  return {...work,fixedSnapshot:{...rest,kind:'fixe',animation:{},preset:null}};
 }
