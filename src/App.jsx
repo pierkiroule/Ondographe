@@ -1,4 +1,6 @@
 import React,{useState,useEffect,useRef,useMemo} from "react";
+import Timeline from "./Timeline";
+import {animatedItem,DURATION} from "./animation";
 const EM=[["🌊","Onde"],["🌬️","Souffle"],["🌱","Croissance"],["🍄","Réseau"],["🐚","Spirale"],["🪶","Plume"],["🐦","Nuée"],["💧","Écho"],["🌳","Cernes"],["🕸️","Maillage"],["☁️","Brume"],["🪨","Strate"]];
 const PAL=["#CADFE6","#BDC9DB","#B0C4CC","#EDE1B5","#F0DC91","#E7CF98","#CBD5BF","#BFD9D0","#D6D9B6","#E8C6B5","#DFB097","#EDC6A1","#E7DFD0","#D3D2CA","#F0EDE5"];
 const ADJ=["secret","lent","sauvage","intime","suspendu","fragile","profond","vagabond","naissant"];
@@ -35,22 +37,23 @@ function pointsFor(item,t=0){
 }
 const path=line=>line.map(([x,y],i)=>(i?"L":"M")+x.toFixed(2)+" "+y.toFixed(2)).join(" ");
 function svgFor(item,animated=false,mono=false){
- const frames=animated?Array.from({length:25},(_,i)=>pointsFor(item,i*30/24)):null;
- const lines=pointsFor(item,0);
+ const times=animated?[...new Set([...Array.from({length:121},(_,i)=>i/4),...Object.values(item.animation||{}).flatMap(keys=>keys.map(k=>k.time))])].sort((a,b)=>a-b):[];
+ const frames=animated?times.map(t=>pointsFor(animatedItem(item,t),t)):null;
+ const lines=pointsFor(animatedItem(item,0),0);
  const stroke=mono?"#000000":"#354a48";
  let s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">';
  if(!mono)s+='<rect width="600" height="600" fill="'+item.palette+'"/>';
  s+='<g fill="none" stroke="'+stroke+'" stroke-width="'+(0.7+item.params.relief/100).toFixed(2)+'" opacity=".9" stroke-linecap="round" stroke-linejoin="round">';
- lines.forEach((line,i)=>{s+='<path d="'+path(line)+'">';if(animated)s+='<animate attributeName="d" values="'+frames.map(f=>path(f[i])).join(";")+'" dur="30s" repeatCount="indefinite"/>';s+='</path>';});
+ lines.forEach((line,i)=>{s+='<path d="'+path(line)+'">';if(animated)s+='<animate attributeName="d" values="'+frames.map(f=>path(f[i])).join(";")+'" keyTimes="'+times.map(t=>t/DURATION).join(';')+'" calcMode="linear" dur="30s" repeatCount="indefinite"/>';s+='</path>';});
  s+='</g></svg>';
  return s;
 }
 const download=(text,name,type="image/svg+xml")=>{const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)};
 const defaults={organic:65,density:50,energy:40,complexity:45,relief:70};
-function Wave({item,edit,onSculpt}){
+function Wave({item,edit,onSculpt,time}){
  const ref=useRef(),drag=useRef(null),[tick,setTick]=useState(0);
- useEffect(()=>{if(item.kind!=="animé")return;let raf,active=true;const loop=()=>{if(!active)return;setTick(v=>v+1);raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);return()=>{active=false;cancelAnimationFrame(raf)}},[item.kind]);
- const paths=useMemo(()=>pointsFor(item,item.kind==="animé"?(performance.now()/1000)%30:0).map(path),[item,tick]);
+ useEffect(()=>{if(item.kind!=="animé"||time!==undefined)return;let raf,active=true;const loop=()=>{if(!active)return;setTick(v=>v+1);raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);return()=>{active=false;cancelAnimationFrame(raf)}},[item.kind,time]);
+ const paths=useMemo(()=>{const t=time??(item.kind==="animé"?(performance.now()/1000)%30:0);return pointsFor(animatedItem(item,t),t).map(path)},[item,tick,time]);
  const onMove=e=>{if(!drag.current||!edit)return;const r=ref.current.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*600,y=(e.clientY-r.top)/r.height*600,prev=drag.current;onSculpt(item.id,{x,y,dx:(x-prev.x)*1.6,dy:(y-prev.y)*1.6,radius:100});drag.current={x,y}};
  return <svg ref={ref} viewBox="0 0 600 600" className={edit?"editable":""} onPointerDown={e=>{if(!edit)return;const r=e.currentTarget.getBoundingClientRect();drag.current={x:(e.clientX-r.left)/r.width*600,y:(e.clientY-r.top)/r.height*600};e.currentTarget.setPointerCapture(e.pointerId)}} onPointerMove={onMove} onPointerUp={()=>drag.current=null} onPointerCancel={()=>drag.current=null}>
  <rect width="600" height="600" fill={item.palette}/>
@@ -93,8 +96,11 @@ export default function App(){
 }
 function WorkCard({w,sculpt,updateWork,sculptWork,save,exportWork,remove}){
  const [expanded,setExpanded]=useState(false),dialog=useRef(null);
+ const [time,setTime]=useState(0),[playing,setPlaying]=useState(false);
+ useEffect(()=>{if(!playing||w.kind!=="animé")return;let raf,last;const loop=now=>{if(last!==undefined)setTime(t=>(t+(now-last)/1000)%DURATION);last=now;raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);return()=>cancelAnimationFrame(raf)},[playing,w.kind]);
  useEffect(()=>{if(expanded)dialog.current.showModal()},[expanded]);
- return <article><div className="artwork"><Wave item={w} edit={sculpt&&!remove} onSculpt={sculptWork}/><button className="expand" aria-label={"Agrandir "+w.name} onClick={()=>setExpanded(true)}>⤢ <span>Agrandir</span></button></div><div className="card-info"><input aria-label="Nom de l'œuvre" className="workname" value={w.name} onChange={e=>updateWork(w.id,{name:e.target.value})}/><small>{w.kind==="animé"?"● Vivante · boucle de 30 s":"○ Empreinte fixe"}</small><div className="actions">{!remove&&<button onClick={()=>save(w)}>Garder</button>}<button onClick={()=>exportWork(w)}>SVG</button><button onClick={()=>exportWork(w,false,true)}>Gravure</button>{remove&&<button onClick={remove}>Supprimer</button>}</div></div>
- {expanded&&<dialog ref={dialog} className="art-dialog" aria-label={w.name} onClose={()=>setExpanded(false)}><div className="dialog-toolbar"><span>{w.name}</span><button autoFocus onClick={()=>dialog.current.close()}>Fermer ×</button></div><Wave item={w} edit={sculpt&&!remove} onSculpt={sculptWork}/></dialog>}
+ return <article><div className="artwork"><Wave item={w} time={w.kind==="animé"?time:0} edit={sculpt&&!remove} onSculpt={sculptWork}/><button className="expand" aria-label={"Agrandir "+w.name} onClick={()=>setExpanded(true)}>⤢ <span>Agrandir</span></button></div><div className="card-info"><input aria-label="Nom de l'œuvre" className="workname" value={w.name} onChange={e=>updateWork(w.id,{name:e.target.value})}/><small>{w.kind==="animé"?"● Vivante · boucle de 30 s":"○ Empreinte fixe"}</small><div className="actions">{!remove&&<button onClick={()=>save(w)}>Garder</button>}<button onClick={()=>exportWork(w)}>SVG</button><button onClick={()=>exportWork(w,false,true)}>Gravure</button>{remove&&<button onClick={remove}>Supprimer</button>}</div></div>
+ {expanded&&<dialog ref={dialog} className="art-dialog" aria-label={w.name} onClose={()=>setExpanded(false)}><div className="dialog-toolbar"><span>{w.name}</span><button autoFocus onClick={()=>dialog.current.close()}>Fermer ×</button></div><Wave item={w} time={w.kind==="animé"?time:0} edit={sculpt&&!remove} onSculpt={sculptWork}/></dialog>}
+ {w.kind==="animé"&&<Timeline item={w} time={time} onTime={setTime} playing={playing} onPlaying={setPlaying} onChange={animation=>updateWork(w.id,{animation})}/>}
  </article>;
 }
