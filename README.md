@@ -37,19 +37,28 @@ npm run preview
    projet JSON modifiable et sauvegarde dans l’Ondothèque. Les modifications
    des images clés ne changent pas la version fixe validée.
 
-## Labo des résonances (optionnel)
+## Audio réactif dans l’atelier
 
-Importer un son dans le labo pour obtenir automatiquement une empreinte fixe
-et une version animée de 10 secondes. Le niveau, les variations et les passages
-par zéro du signal déterminent la forme, l’espacement et le nombre de vagues ;
-son enveloppe d’énergie devient une piste d’animation. Cette interprétation
-est graphique et ne prétend pas identifier les sources sonores.
+L’étape Animer propose deux entrées : mouvements prédéfinis et audio réactif.
+Dans le mode audio, importer un sample (lu en boucle) ou activer le microphone.
+L’autorisation micro est demandée uniquement après un clic explicite. Le micro
+n’est jamais renvoyé vers les haut-parleurs. Le sample est audible pendant sa lecture.
 
-Les deux versions sont affichées et exportables séparément. « Retoucher au
-pinceau », « Modifier l’animation » et « Revoir forme, trait et fond » reprennent
-la proposition dans l’atelier. La sauvegarde conserve le projet avec sa version
-fixe et ses clés d’animation. Le son reste local au navigateur et n’est pas inclus
-dans le projet sauvegardé.
+Sensibilité, douceur et intensité règlent la réaction : volume → amplitude,
+graves → dilatation, aigus → vibration. Les modes d’apparition restent
+combinables : Continu, Résonance, Écho, Émergence ou Tracé.
+
+« Capturer 10 secondes » transforme la réaction en pistes d’images clés. La
+capture revient progressivement à ses valeurs initiales en fin de boucle.
+Elle est rejouable, modifiable et exportable comme les animations prédéfinies.
+Le SVG contient le mouvement capturé, sans incorporer le son. Le SVG fixe validé
+reste indépendant de cette capture. Les exports demandent d’abord une capture ou
+l’arrêt du direct.
+
+Changer de mode ou d’étape, arrêter le son ou quitter l’atelier coupe la source
+et libère le microphone. Le traitement reste local ; aucun fichier sonore n’est
+téléversé ni ajouté au projet sauvegardé. Le micro nécessite HTTPS (ou localhost)
+et un navigateur compatible. L’ancien labo séparé est supprimé.
 
 La barre d’étapes permet de revenir sur chaque choix sans recommencer. L’aperçu
 reste visible pendant les réglages, y compris sur mobile. L’aperçu agrandi utilise
@@ -64,7 +73,7 @@ une conservation indépendante du navigateur. Un projet JSON peut être réimpor
 et repris depuis l’Ondothèque. Les anciennes œuvres sont compatibles avec les
 nouveaux motifs et peuvent être reprises pour édition.
 
-Les aperçus animés de l’atelier, du labo et de l’Ondothèque partagent la même
+Les aperçus animés de l’atelier et de l’Ondothèque partagent la même
 horloge de lecture. L’Ondothèque propose lecture/pause et retour au début pour
 chaque animation. Le temps se suspend quand l’onglet du navigateur est masqué,
 puis reprend sans saut au retour. Les aperçus fixes restent statiques.
@@ -73,7 +82,7 @@ puis reprend sans saut au retour. Les aperçus fixes restent statiques.
 Résonance (pulsation), Écho (vagues successives), Émergence (révélation du centre
 vers l’extérieur) ou Tracé (dessin progressif des contours). Les aperçus et les
 exports animés suivent ce choix ; le SVG fixe reste entièrement visible.
-Le labo propose par défaut une apparition Écho. Les anciennes clés de 30 secondes
+Les anciennes clés de 30 secondes
 sont recalées proportionnellement sur la boucle de 10 secondes à la lecture.
 
 Dans Composer, choisir le format de page : A4 portrait/paysage (en mm), carré,
