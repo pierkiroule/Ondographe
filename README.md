@@ -18,23 +18,38 @@ node --test tests/*.test.js
 npm run preview
 ```
 
-## Un parcours en quatre étapes
+## Un parcours en cinq étapes
 
-1. **Forme & matière** : choisir un motif parmi Tourbillon, Boucle, Double foyer,
-   Arche, Selle et Rosace ; choisir le trait (empreinte embossée, encre, pointillé),
-   son épaisseur et le fond. Le bleu papier et les traits blancs en relief
-   s’inspirent du dossier « Oreillez-vous ». Le grain de papier est facultatif.
-2. **Sculpter** : travailler une seule image statique au doigt ou à la souris,
-   déplacer le centre, régler l’espacement des lignes et l’ouverture du motif.
-   Le centre ne masque et n’efface aucun tracé : l’ouverture vient de la géométrie.
-   Annulation du dernier geste complet et réinitialisation disponibles.
-3. **Animer**, en option : choisir Respiration, Dérive, Orbite, Balancement ou
-   Ondulation. La boucle de 30 secondes démarre sans réglage préalable. Ouvrir
-   « Modifier les images clés » après le choix pour ajuster les valeurs et les
-   courbes Bézier. L’animation conserve la sculpture et la matière choisies.
-   « Continuer sans animation » conduit directement aux exports statiques.
-4. **Exporter** : SVG statique, SVG animé si choisi, SVG noir sans fond pour la
-   gravure, projet JSON modifiable et sauvegarde dans l’Ondothèque.
+1. **Composer** : choisir le style de trait, le fond, la forme de l’onde,
+   l’épaisseur, l’espacement et la complexité (nombre de vagues). Le bleu papier
+   et les traits blancs embossés s’inspirent du dossier « Oreillez-vous ».
+2. **Résonance** : déformer les lignes au doigt ou à la souris avec un pinceau
+   de taille et d’intensité réglables. Son contour indique le rayon d’action.
+   Le déplacement du centre, l’annulation du dernier geste complet et la
+   réinitialisation restent disponibles. Aucun masque n’efface les tracés.
+3. **Valider le fixe** : conserver une version fixe distincte des réglages
+   d’animation. Une retouche de la géométrie ou de la matière invalide cette
+   validation ; il faut alors valider à nouveau avant l’animation ou les exports.
+4. **Animer** : choisir Respiration, Dérive, Orbite, Balancement ou Ondulation,
+   en boucle de 30 secondes. Les images clés et leurs courbes Bézier sont
+   modifiables après le choix. L’animation peut aussi être ignorée.
+5. **Exporter** : SVG fixe validé, SVG animé, SVG noir sans fond pour la gravure,
+   projet JSON modifiable et sauvegarde dans l’Ondothèque. Les modifications
+   des images clés ne changent pas la version fixe validée.
+
+## Labo des résonances (optionnel)
+
+Importer un son dans le labo pour obtenir automatiquement une empreinte fixe
+et une version animée de 30 secondes. Le niveau, les variations et les passages
+par zéro du signal déterminent la forme, l’espacement et le nombre de vagues ;
+son enveloppe d’énergie devient une piste d’animation. Cette interprétation
+est graphique et ne prétend pas identifier les sources sonores.
+
+Les deux versions sont affichées et exportables séparément. « Retoucher au
+pinceau », « Modifier l’animation » et « Revoir forme, trait et fond » reprennent
+la proposition dans l’atelier. La sauvegarde conserve le projet avec sa version
+fixe et ses clés d’animation. Le son reste local au navigateur et n’est pas inclus
+dans le projet sauvegardé.
 
 La barre d’étapes permet de revenir sur chaque choix sans recommencer. L’aperçu
 reste visible pendant les réglages, y compris sur mobile. L’aperçu agrandi utilise
