@@ -1,0 +1,9 @@
+import React,{useEffect,useRef,useState} from 'react';
+export default function Tutorial({open,onClose}){
+ const ref=useRef(null),[hide,setHide]=useState(()=>{try{return localStorage.getItem('ondographe-hide-tutorial')==='true'}catch{return false}});
+ useEffect(()=>{if(open&&!ref.current.open)ref.current.showModal();if(!open&&ref.current.open)ref.current.close()},[open]);
+ const persist=()=>{try{if(hide)localStorage.setItem('ondographe-hide-tutorial','true');else localStorage.removeItem('ondographe-hide-tutorial')}catch{}};
+ const close=()=>{persist();ref.current.close()};
+ const finish=()=>{persist();onClose()};
+ return <dialog ref={ref} className="tutorial-dialog" aria-labelledby="tutorial-title" onClose={finish} onCancel={persist}><button className="tutorial-close" aria-label="Fermer le tutoriel" onClick={close}>×</button><p className="eyebrow">BIENVENUE DANS L’ATELIER</p><h2 id="tutorial-title">Une onde, quelques gestes.</h2><p className="tutorial-intro">Créez une empreinte en lignes, puis donnez-lui vie si vous le souhaitez.</p><ol><li><span>01</span><div><strong>Composez</strong><p>Choisissez la forme, le fond et le format. Ajustez les curseurs : le résultat apparaît tout de suite.</p></div></li><li><span>02</span><div><strong>Faites résonner</strong><p>Glissez au doigt ou à la souris pour déformer les lignes, puis validez votre dessin fixe.</p></div></li><li><span>03</span><div><strong>Animez et emportez</strong><p>Choisissez un mouvement ou réagissez à un son. Exportez votre SVG fixe ou une boucle de 10 secondes.</p></div></li></ol><label className="check"><input type="checkbox" checked={hide} onChange={e=>setHide(e.target.checked)}/> Ne plus afficher au lancement</label><button autoFocus className="primary tutorial-start" onClick={close}>Commencer →</button><p className="hint">Retrouvez ce guide à tout moment avec le bouton Aide.</p></dialog>;
+}

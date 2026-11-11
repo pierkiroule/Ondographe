@@ -93,3 +93,12 @@ le déplacement du centre tiennent compte de ce placement. L’export conserve l
 dimensions physiques, le rapport de page et le placement, en fixe comme en animé.
 Les dimensions personnalisées sont limitées à 1–20 000 unités par côté ; changer
 l’unité réinterprète les valeurs saisies dans l’unité choisie.
+
+Les réglages numériques utilisent des sliders avec leur valeur affichée, dont
+les dimensions personnalisées et le temps/la valeur des images clés. Les formats
+prédéfinis affichent un résumé ; « Personnaliser » ouvre les dimensions, avec une
+plage standard et une option Grand format. Le placement du motif est repliable.
+Les sliders restent réglables au clavier avec les flèches.
+
+Un tutoriel court s’ouvre au lancement. « Ne plus afficher au lancement » mémorise
+la préférence dans le navigateur ; le bouton Aide permet de rouvrir le guide.

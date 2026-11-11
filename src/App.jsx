@@ -1,5 +1,7 @@
 import React,{useState,useEffect,useRef,useMemo,useId} from 'react';
 import Timeline from './Timeline';
+import Tutorial from './Tutorial';
+import Slider from './Slider';
 import PageControls from './PageControls';
 import {pageFor,motifTransform,toMotif} from './page';
 import {APPEARANCES,lineAppearance} from './appearance';
@@ -30,11 +32,12 @@ function Wave({item,time=0,mode,onSculpt,onCenter,brush={size:100,intensity:60}}
  {mode==='center'&&<g className="center-handle" pointerEvents="none" stroke="#8b412b" fill="none"><circle cx={cx} cy={cy} r="10"/><path d={`M${cx-18} ${cy}H${cx+18}M${cx} ${cy-18}V${cy+18}`}/></g>}
  </g></svg>;
 }
-function Range({label,value,min,max,step=1,onChange,unit=''}){return <label className="range-label"><span>{label}<output>{Math.round(value*10)/10}{unit}</output></span><input aria-label={label} type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(+e.target.value)}/></label>}
+const Range=Slider;
 export default function App(){
  const [work,setWork]=useState(createWork),[step,setStep]=useState(0),[mode,setMode]=useState('sculpt'),[playing,setPlaying]=useState(false),[tab,setTab]=useState('instrument'),[message,setMessage]=useState(''),[expanded,setExpanded]=useState(false),[code,setCode]=useState('');
  const [brush,setBrush]=useState({size:100,intensity:60}),[audioMode,setAudioMode]=useState(false),[audioLive,setAudioLive]=useState(null);
  const [library,setLibrary]=useState(()=>{try{const a=JSON.parse(localStorage.getItem('ondographe-library')||'[]');return Array.isArray(a)?a:[]}catch{return []}});
+ const [tutorial,setTutorial]=useState(()=>{try{return localStorage.getItem('ondographe-hide-tutorial')!=='true'}catch{return true}});
  const dialog=useRef(null);
  useEffect(()=>{try{localStorage.setItem('ondographe-library',JSON.stringify(library))}catch{setMessage('Stockage plein. Exportez votre Ondothèque.')}},[library]);
  const [time,setTime]=useAnimationClock(playing&&work.kind==='animé'&&step>=3&&tab==='instrument');
@@ -51,7 +54,7 @@ export default function App(){
  const exportWork=(item,animated=false,mono=false)=>{const text=svgFor(!animated&&item.fixedSnapshot?{...item.fixedSnapshot,name:item.name}:item,animated,mono);setCode(text);download(text,(item.name||'empreinte').replace(/[^a-z0-9_-]+/gi,'-')+(animated?'-anime':'')+'.svg')};
  const display=step<3?{...work,kind:'fixe',animation:{}}:audioLive?{...work,kind:'animé',animation:{},params:{...work.params,...audioLive}}:work;
  const waveProps={item:display,time,mode:step===1?mode:null,onSculpt:sculpt,onCenter:center,brush};
- return <main className="flow-app"><header><div><p className="eyebrow">LES SOURCIERS DU VIVANT</p><h1>L’Ondographe <small>•°</small></h1></div><nav><button className={tab==='instrument'?'active':''} onClick={()=>setTab('instrument')}>Atelier</button><button className={tab==='library'?'active':''} onClick={()=>setTab('library')}>Ondothèque ({library.length})</button></nav></header>
+ return <main className="flow-app"><header><div><p className="eyebrow">LES SOURCIERS DU VIVANT</p><h1>L’Ondographe <small>•°</small></h1></div><nav><button onClick={()=>setTutorial(true)}>Aide</button><button className={tab==='instrument'?'active':''} onClick={()=>setTab('instrument')}>Atelier</button><button className={tab==='library'?'active':''} onClick={()=>setTab('library')}>Ondothèque ({library.length})</button></nav></header>
  {tab==='instrument'?<>
  <div className="flow-intro"><p className="eyebrow">UNE FORME. UN GESTE. UNE EMPREINTE.</p><h2>Donner forme à l’écoute.</h2></div>
  <section className="flow-progress" aria-label="Étapes de création"><ol>{STEPS.map((name,i)=><li key={name}><button aria-current={step===i?'step':undefined} className={i===step?'current':i<step?'complete':''} onClick={()=>navigate(i)}><span>{String(i+1).padStart(2,'0')}</span>{name}</button></li>)}</ol><div role="progressbar" aria-label="Progression de création" aria-valuemin="0" aria-valuemax="5" aria-valuenow={step+1}><div style={{width:`${(step+1)*20}%`}}/></div></section>
@@ -72,5 +75,6 @@ export default function App(){
  </>:<section className="library-panel"><div className="library-heading"><div><p className="eyebrow">VOS EMPREINTES</p><h2>L’Ondothèque</h2></div><button onClick={()=>download(JSON.stringify(library,null,2),'ondotheque.json','application/json')}>Exporter la collection</button><label className="upload">Importer un projet<input type="file" accept=".json" hidden onChange={async e=>{try{const parsed=JSON.parse(await e.target.files[0].text()),items=Array.isArray(parsed)?parsed:[parsed];if(!items.every(w=>w.params&&Array.isArray(w.notes)&&Array.isArray(w.gestures)))throw Error();setLibrary(old=>[...items.map(w=>({...w,id:crypto.randomUUID()})),...old]);setMessage('Projet importé.')}catch{setMessage('Le fichier ne contient pas de projet compatible.')}}}/></label></div>{!library.length&&<p className="empty-state">Vos empreintes trouveront leur place ici. Commencez dans l’atelier.</p>}<div className="gallery">{library.map(w=><article key={w.id}><LibraryPreview Wave={Wave} item={w}/><div className="card-info"><h3>{w.name}</h3><div className="actions"><button onClick={()=>{setWork({...w,id:crypto.randomUUID(),params:{...defaults,...w.params}});setStep(1);setTab('instrument');setTime(0);setPlaying(false)}}>Reprendre</button><button onClick={()=>exportWork(w,w.kind==='animé')}>SVG</button><button onClick={()=>setLibrary(old=>old.filter(x=>x.id!==w.id))}>Supprimer</button></div></div></article>)}</div></section>}
  <p className="hint status" role="status">{message}</p><footer>ÉCOUTER · SCULPTER · RÉCOLTER</footer>
  {expanded&&<dialog ref={dialog} className="art-dialog" aria-label="Empreinte agrandie" onClose={()=>setExpanded(false)}><div className="dialog-toolbar"><span>{work.name}</span><button autoFocus onClick={()=>dialog.current.close()}>Fermer ×</button></div><Wave {...waveProps}/></dialog>}
+ <Tutorial open={tutorial} onClose={()=>setTutorial(false)}/>
  </main>;
 }
