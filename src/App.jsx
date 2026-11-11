@@ -40,7 +40,7 @@ function svgFor(item,animated=false,mono=false){
  const stroke=mono?"#000000":"#354a48";
  let s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">';
  if(!mono)s+='<rect width="600" height="600" fill="'+item.palette+'"/>';
- s+='<g fill="none" stroke="'+stroke+'" stroke-width="'+(0.7+item.params.relief/100).toFixed(2)+'" opacity=".75" stroke-linecap="round" stroke-linejoin="round">';
+ s+='<g fill="none" stroke="'+stroke+'" stroke-width="'+(0.7+item.params.relief/100).toFixed(2)+'" opacity=".9" stroke-linecap="round" stroke-linejoin="round">';
  lines.forEach((line,i)=>{s+='<path d="'+path(line)+'">';if(animated)s+='<animate attributeName="d" values="'+frames.map(f=>path(f[i])).join(";")+'" dur="30s" repeatCount="indefinite"/>';s+='</path>';});
  s+='</g></svg>';
  return s;
@@ -54,7 +54,7 @@ function Wave({item,edit,onSculpt}){
  const onMove=e=>{if(!drag.current||!edit)return;const r=ref.current.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*600,y=(e.clientY-r.top)/r.height*600,prev=drag.current;onSculpt(item.id,{x,y,dx:(x-prev.x)*1.6,dy:(y-prev.y)*1.6,radius:100});drag.current={x,y}};
  return <svg ref={ref} viewBox="0 0 600 600" className={edit?"editable":""} onPointerDown={e=>{if(!edit)return;const r=e.currentTarget.getBoundingClientRect();drag.current={x:(e.clientX-r.left)/r.width*600,y:(e.clientY-r.top)/r.height*600};e.currentTarget.setPointerCapture(e.pointerId)}} onPointerMove={onMove} onPointerUp={()=>drag.current=null} onPointerCancel={()=>drag.current=null}>
  <rect width="600" height="600" fill={item.palette}/>
- <g fill="none" stroke="#354a48" strokeWidth={0.7+item.params.relief/100} opacity=".75" strokeLinecap="round" strokeLinejoin="round">{paths.map((d,i)=><path key={i} d={d}/>)}</g>
+ <g fill="none" stroke="#354a48" strokeWidth={0.7+item.params.relief/100} opacity=".9" strokeLinecap="round" strokeLinejoin="round">{paths.map((d,i)=><path key={i} d={d}/>)}</g>
  </svg>;
 }
 export default function App(){
@@ -78,15 +78,23 @@ export default function App(){
  return <main><header><h1>L'Ondographe <small>•°</small></h1><p>INSTRUMENT DES SOURCIERS DU VIVANT</p></header>
  <nav><button className={tab==="instrument"?"active":""} onClick={()=>setTab("instrument")}>Instrument</button><button className={tab==="library"?"active":""} onClick={()=>setTab("library")}>Ondothèque ({library.length})</button></nav>
  {tab==="instrument"?<>
+ <div className="studio-heading"><div><p className="eyebrow">ATELIER GÉNÉRATIF</p><h2>Place aux ondes.</h2><p className="hint">Six empreintes à explorer. Agrandissez une œuvre pour entrer dans le détail.</p></div><button onClick={fresh}>↻ Nouvelles propositions</button></div>
+ <details className="settings"><summary>Composer les ondes <span>{notes.join(" ")} · réglages, couleurs et audio</span></summary>
  <h3>Accord du vivant</h3><div className="emojis">{EM.map(([emoji,label])=><button title={label} aria-label={label} key={emoji} className={notes.includes(emoji)?"active":""} onClick={()=>changeNotes(notes.includes(emoji)?notes.length>1?notes.filter(n=>n!==emoji):notes:[...notes,emoji])}>{emoji}<span>{label}</span></button>)}</div>
  <div className="controls">{Object.entries(params).map(([k,v])=><label key={k}>{({organic:"Organicité",density:"Densité",energy:"Vitalité",complexity:"Complexité",relief:"Relief"})[k]} · {v}%<input type="range" min="0" max="100" value={v} onChange={e=>changeParams(k,+e.target.value)}/></label>)}</div>
  <div className="palette">{PAL.map(c=><button key={c} title={c} className={palette===c?"picked":""} style={{background:c}} onClick={()=>changePalette(c)}/>)}</div>
  <div className="toolbar"><button onClick={fresh}>↻ Six nouvelles propositions</button><button className={sculpt?"active":""} onClick={()=>setSculpt(!sculpt)}>{sculpt?"Terminer la sculpture":"Sculpter au doigt"}</button><label className="upload">Importer WAV / MP3<input type="file" accept="audio/*,.wav,.mp3" hidden onChange={e=>analyze(e.target.files[0])}/></label></div>
  {audio&&<p className="hint">{audio.name} · {audio.duration.toFixed(1)} s · énergie RMS {audio.rms.toFixed(3)}</p>}
- <h3>Trois empreintes fixes</h3><div className="gallery">{works.slice(0,3).map(w=><WorkCard key={w.id} {...{w,sculpt,updateWork,sculptWork,save,exportWork}}/>)}</div>
- <h3>Trois empreintes vivantes · 30 s</h3><div className="gallery">{works.slice(3).map(w=><WorkCard key={w.id} {...{w,sculpt,updateWork,sculptWork,save,exportWork}}/>)}</div>
+ </details>
+ <div className="gallery-heading"><h3>Les six empreintes</h3><button className={sculpt?"active":""} onClick={()=>setSculpt(!sculpt)}>{sculpt?"Terminer la sculpture":"Sculpter au doigt"}</button></div><div className="gallery">{works.map(w=><WorkCard key={w.id} {...{w,sculpt,updateWork,sculptWork,save,exportWork}}/>)}</div>
  </>:<><div className="toolbar"><button onClick={()=>download(JSON.stringify(library,null,2),"ondotheque.json","application/json")}>Exporter l'Ondothèque JSON</button><label className="upload">Importer JSON<input type="file" accept=".json,application/json" hidden onChange={async e=>{try{const data=JSON.parse(await e.target.files[0].text());if(!Array.isArray(data))throw Error("Format incorrect");setLibrary(old=>[...data,...old]);setMessage("Ondothèque importée.")}catch(err){setMessage(err.message)}}}/></label></div><div className="gallery">{library.map(w=><WorkCard key={w.id} {...{w,sculpt,sculptWork:()=>{},save:()=>{},exportWork}} updateWork={(id,patch)=>setLibrary(old=>old.map(x=>x.id===id?{...x,...patch}:x))} remove={()=>setLibrary(old=>old.filter(x=>x.id!==w.id))}/>)}</div></>}
  <details><summary>Code SVG de l'œuvre</summary><p className="hint">Sélectionnez une œuvre puis générez son SVG. Le code peut être modifié et exporté. L'édition libre ne reconstitue pas les paramètres génératifs.</p><select value={selected||""} onChange={e=>setSelected(e.target.value)}><option value="">Choisir une œuvre</option>{[...works,...library].map(w=><option value={w.id} key={w.id}>{w.name}</option>)}</select><button disabled={!selectedWork} onClick={()=>setCode(svgFor(selectedWork,selectedWork.kind==="animé"))}>Générer le code</button><textarea value={code} onChange={e=>setCode(e.target.value)} rows={9}/><button disabled={!code} onClick={()=>download(code,"ondographe-edite.svg")}>Exporter le code modifié</button></details>
  <p className="hint" role="status">{message}</p><footer>ÉCOUTER · SCULPTER · RÉCOLTER</footer></main>;
 }
-function WorkCard({w,sculpt,updateWork,sculptWork,save,exportWork,remove}){return <article><Wave item={w} edit={sculpt&&!remove} onSculpt={sculptWork}/><input aria-label="Nom de l'œuvre" className="workname" value={w.name} onChange={e=>updateWork(w.id,{name:e.target.value})}/><small>{w.kind==="animé"?"Boucle · 30 s":"Empreinte fixe"}</small><div className="actions">{!remove&&<button onClick={()=>save(w)}>Garder</button>}<button onClick={()=>exportWork(w)}>SVG</button><button onClick={()=>exportWork(w,false,true)}>Gravure</button>{remove&&<button onClick={remove}>Supprimer</button>}</div></article>}
+function WorkCard({w,sculpt,updateWork,sculptWork,save,exportWork,remove}){
+ const [expanded,setExpanded]=useState(false),dialog=useRef(null);
+ useEffect(()=>{if(expanded)dialog.current.showModal()},[expanded]);
+ return <article><div className="artwork"><Wave item={w} edit={sculpt&&!remove} onSculpt={sculptWork}/><button className="expand" aria-label={"Agrandir "+w.name} onClick={()=>setExpanded(true)}>⤢ <span>Agrandir</span></button></div><div className="card-info"><input aria-label="Nom de l'œuvre" className="workname" value={w.name} onChange={e=>updateWork(w.id,{name:e.target.value})}/><small>{w.kind==="animé"?"● Vivante · boucle de 30 s":"○ Empreinte fixe"}</small><div className="actions">{!remove&&<button onClick={()=>save(w)}>Garder</button>}<button onClick={()=>exportWork(w)}>SVG</button><button onClick={()=>exportWork(w,false,true)}>Gravure</button>{remove&&<button onClick={remove}>Supprimer</button>}</div></div>
+ {expanded&&<dialog ref={dialog} className="art-dialog" aria-label={w.name} onClose={()=>setExpanded(false)}><div className="dialog-toolbar"><span>{w.name}</span><button autoFocus onClick={()=>dialog.current.close()}>Fermer ×</button></div><Wave item={w} edit={sculpt&&!remove} onSculpt={sculptWork}/></dialog>}
+ </article>;
+}
