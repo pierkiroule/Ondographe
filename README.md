@@ -15,7 +15,7 @@ npm run build
 npm run preview
 ```
 
-Fonctions : accords d'emojis, une proposition SVG sculptable, sculpture tactile, import audio et analyse locale, sauvegarde locale dans l'Ondothèque, exports SVG fixes et animés.
+Fonctions : six familles de motifs en lignes, une proposition SVG sculptable, sculpture tactile, import audio et analyse locale, sauvegarde locale dans l'Ondothèque, exports SVG fixes et animés.
 
 Les fichiers audio sont analysés dans le navigateur et ne sont pas téléversés. L'Ondothèque utilise localStorage : exportez vos œuvres pour les conserver indépendamment du navigateur.
 
@@ -31,3 +31,18 @@ qu’aux temps exacts des clés. Pour une boucle sans rupture, donner aux clés 
 0 et 30 secondes les mêmes valeurs. La densité reste constante pendant la lecture.
 
 Tests de l’interpolation : `node --test tests/animation.test.js`.
+
+## Motifs et centre
+
+Choisir Tourbillon, Boucle, Double foyer, Arche, Selle ou Rosace dans « Composer
+les ondes ». Chaque bouton montre un aperçu du motif. Les réglages visibles
+« Espacement des lignes » et « Vide central » contrôlent l’écart des contours et
+le rayon de la zone laissée vide (unités du SVG 600 × 600).
+
+« Déplacer le centre » permet de glisser sur l’œuvre pour positionner l’attracteur ;
+les curseurs horizontal et vertical permettent aussi un placement au clavier.
+Terminer le déplacement pour retrouver la sculpture. Le vide reste préservé même
+après sculpture, dans l’aperçu, l’Ondothèque et les exports fixes et animés.
+Les anciennes œuvres avec emojis sont associées à une famille de motif compatible.
+
+Tous les tests : `node --test tests/*.test.js`.
