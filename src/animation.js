@@ -1,4 +1,4 @@
-export const TRACKS = { energy: 'Vitalité', organic: 'Organicité', complexity: 'Complexité' };
+export const TRACKS = { energy: 'Vitalité', organic: 'Organicité', complexity: 'Complexité', breath: 'Respiration', driftX: 'Dérive X', driftY: 'Dérive Y', turn: 'Rotation' };
 export const DURATION = 30;
 export function easing(t, curve = [0.42, 0, 0.58, 1]) {
   const [x1,y1,x2,y2] = curve;
@@ -18,6 +18,25 @@ export function valueAt(keys, time, fallback) {
 }
 export function animatedItem(item,time) {
   const params={...item.params};
-  for(const key of Object.keys(TRACKS))params[key]=valueAt(item.animation?.[key],time,params[key]);
+  for(const key of Object.keys(TRACKS))params[key]=valueAt(item.animation?.[key],time,params[key]??50);
   return {...item,params};
+}
+
+export const PRESETS=[
+ {id:'breathe',name:'Respiration',description:'Les lignes se dilatent puis reviennent au repos.'},
+ {id:'drift',name:'Dérive',description:'Un lent mouvement latéral, comme un souffle.'},
+ {id:'orbit',name:'Orbite',description:'Le motif décrit une petite ronde.'},
+ {id:'swing',name:'Balancement',description:'Une oscillation douce autour du centre.'},
+ {id:'ripple',name:'Ondulation',description:'Une vague traverse les contours.'}
+];
+export function presetAnimation(id,params){
+ const keys=(values)=>values.map((value,i)=>({time:i*30/(values.length-1),value,curve:[.42,0,.58,1]}));
+ switch(id){
+  case 'breathe':return {breath:keys([50,75,50])};
+  case 'drift':return {driftX:keys([50,65,50,35,50])};
+  case 'orbit':return {driftX:keys([50,65,50,35,50]),driftY:keys([50,65,80,65,50])};
+  case 'swing':return {turn:keys([50,60,50,40,50])};
+  case 'ripple':return {organic:keys([params.organic??65,95,params.organic??65]),energy:keys([params.energy??40,90,params.energy??40])};
+  default:return {};
+ }
 }

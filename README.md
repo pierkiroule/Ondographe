@@ -1,4 +1,5 @@
-# L'Ondographe •°
+# L’Ondographe •°
+
 Instrument graphique génératif des Sourciers du vivant.
 
 ## Démarrer
@@ -8,41 +9,42 @@ npm install
 npm run dev
 ```
 
-## Production
+## Production et tests
 
 ```bash
 npm run build
+GITHUB_PAGES=true npm run build
+node --test tests/*.test.js
 npm run preview
 ```
 
-Fonctions : six familles de motifs en lignes, une proposition SVG sculptable, sculpture tactile, import audio et analyse locale, sauvegarde locale dans l'Ondothèque, exports SVG fixes et animés.
+## Un parcours en quatre étapes
 
-Les fichiers audio sont analysés dans le navigateur et ne sont pas téléversés. L'Ondothèque utilise localStorage : exportez vos œuvres pour les conserver indépendamment du navigateur.
+1. **Forme & matière** : choisir un motif parmi Tourbillon, Boucle, Double foyer,
+   Arche, Selle et Rosace ; choisir le trait (empreinte embossée, encre, pointillé),
+   son épaisseur et le fond. Le bleu papier et les traits blancs en relief
+   s’inspirent du dossier « Oreillez-vous ». Le grain de papier est facultatif.
+2. **Sculpter** : travailler une seule image statique au doigt ou à la souris,
+   déplacer le centre, régler l’espacement des lignes et l’ouverture du motif.
+   Le centre ne masque et n’efface aucun tracé : l’ouverture vient de la géométrie.
+   Annulation du dernier geste complet et réinitialisation disponibles.
+3. **Animer**, en option : choisir Respiration, Dérive, Orbite, Balancement ou
+   Ondulation. La boucle de 30 secondes démarre sans réglage préalable. Ouvrir
+   « Modifier les images clés » après le choix pour ajuster les valeurs et les
+   courbes Bézier. L’animation conserve la sculpture et la matière choisies.
+   « Continuer sans animation » conduit directement aux exports statiques.
+4. **Exporter** : SVG statique, SVG animé si choisi, SVG noir sans fond pour la
+   gravure, projet JSON modifiable et sauvegarde dans l’Ondothèque.
 
-## Animation
+La barre d’étapes permet de revenir sur chaque choix sans recommencer. L’aperçu
+reste visible pendant les réglages, y compris sur mobile. L’aperçu agrandi utilise
+le même temps de lecture. Les exports reprennent le style, le papier et les clés ;
+le mouvement est échantillonné tous les 0,25 s et aux temps exacts des clés.
+Les cinq préréglages bouclent ; en édition libre, conserver les mêmes valeurs
+aux clés de 0 et 30 secondes pour une boucle sans rupture.
 
-Choisir « Animé » dans Mouvement pour ouvrir la timeline de 30 secondes sous l’œuvre.
-Déplacer la tête de lecture puis ajouter une image clé sur les pistes Vitalité,
-Organicité ou Complexité. Sélectionner un losange pour modifier son temps, sa valeur
-et la courbe Bézier vers la clé suivante (préréglages ou quatre curseurs).
-Lecture et aperçu agrandi partagent le même temps. Les clés sont conservées dans
-l’Ondothèque et utilisées par l’export SVG animé, échantillonné à 0,25 s ainsi
-qu’aux temps exacts des clés. Pour une boucle sans rupture, donner aux clés de
-0 et 30 secondes les mêmes valeurs. La densité reste constante pendant la lecture.
-
-Tests de l’interpolation : `node --test tests/animation.test.js`.
-
-## Motifs et centre
-
-Choisir Tourbillon, Boucle, Double foyer, Arche, Selle ou Rosace dans « Composer
-les ondes ». Chaque bouton montre un aperçu du motif. Les réglages visibles
-« Espacement des lignes » et « Vide central » contrôlent l’écart des contours et
-le rayon de la zone laissée vide (unités du SVG 600 × 600).
-
-« Déplacer le centre » permet de glisser sur l’œuvre pour positionner l’attracteur ;
-les curseurs horizontal et vertical permettent aussi un placement au clavier.
-Terminer le déplacement pour retrouver la sculpture. Le vide reste préservé même
-après sculpture, dans l’aperçu, l’Ondothèque et les exports fixes et animés.
-Les anciennes œuvres avec emojis sont associées à une famille de motif compatible.
-
-Tous les tests : `node --test tests/*.test.js`.
+Les sons importés sont analysés dans le navigateur sans téléversement.
+L’Ondothèque utilise localStorage ; exporter les projets ou la collection pour
+une conservation indépendante du navigateur. Un projet JSON peut être réimporté
+et repris depuis l’Ondothèque. Les anciennes œuvres sont compatibles avec les
+nouveaux motifs et peuvent être reprises pour édition.

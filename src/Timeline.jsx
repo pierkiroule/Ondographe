@@ -2,18 +2,18 @@ import React,{useState} from 'react';
 import {TRACKS,DURATION,valueAt} from './animation';
 const presets={Douce:[.42,0,.58,1],Linéaire:[0,0,1,1],Accélération:[.42,0,1,1],Décélération:[0,0,.58,1]};
 export default function Timeline({item,time,onTime,playing,onPlaying,onChange}){
- const [track,setTrack]=useState('energy'),[selected,setSelected]=useState(null);
+ const [track,setTrack]=useState(Object.keys(item.animation||{})[0]||'energy'),[selected,setSelected]=useState(null);
  const keys=item.animation?.[track]||[];
  const key=keys.find(k=>k.time===selected);
  const commit=next=>onChange({...item.animation,[track]:next.sort((a,b)=>a.time-b.time)});
  const patch=values=>commit(keys.map(k=>k.time===selected?{...k,...values}:k));
- const add=()=>{const t=Math.round(time*10)/10;commit([...keys.filter(k=>k.time!==t),{time:t,value:valueAt(keys,t,item.params[track]),curve:[.42,0,.58,1]}]);setSelected(t);onTime(t);onPlaying(false)};
+ const add=()=>{const t=Math.round(time*10)/10;commit([...keys.filter(k=>k.time!==t),{time:t,value:valueAt(keys,t,(item.params[track]??50)),curve:[.42,0,.58,1]}]);setSelected(t);onTime(t);onPlaying(false)};
  const curve=key?.curve||presets.Douce;
- const graph=Array.from({length:151},(_,i)=>`${i?'L':'M'}${i*2} ${100-valueAt(keys,i/5,item.params[track])}`).join(' ');
+ const graph=Array.from({length:151},(_,i)=>`${i?'L':'M'}${i*2} ${100-valueAt(keys,i/5,(item.params[track]??50))}`).join(' ');
  return <section className="timeline" aria-label="Éditeur d’animation">
  <div className="timeline-title"><h3>Animation</h3><span>Boucle de 30 secondes</span></div>
  <div className="transport"><button onClick={()=>onPlaying(!playing)}>{playing?'Pause':'Lire'}</button><button onClick={()=>{onPlaying(false);onTime(0)}} aria-label="Revenir au début">↤</button><output>{time.toFixed(1)} / 30 s</output><button onClick={add}>+ Image clé</button></div>
- <label className="scrubber">Temps<input aria-label="Temps de l’animation" type="range" min="0" max={DURATION} step="0.1" value={time} onChange={e=>{onPlaying(false);onTime(+e.target.value)}}/></label>
+ <label className="scrubber">Temps<input aria-label="Temps dans l’éditeur" type="range" min="0" max={DURATION} step="0.1" value={time} onChange={e=>{onPlaying(false);onTime(+e.target.value)}}/></label>
  <div className="ruler"><span>0 s</span><span>10 s</span><span>20 s</span><span>30 s</span></div>
  <div className="track-tabs">{Object.entries(TRACKS).map(([id,label])=><button key={id} className={track===id?'active':''} onClick={()=>{setTrack(id);setSelected(null)}}>{label}</button>)}</div>
  <div className="key-lane">{keys.map(k=><button key={k.time} className={selected===k.time?'key selected':'key'} style={{left:`${k.time/30*100}%`}} aria-label={`Image clé à ${k.time} secondes`} onClick={()=>{setSelected(k.time);onTime(k.time);onPlaying(false)}}>◆</button>)}</div>

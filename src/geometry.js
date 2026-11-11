@@ -16,13 +16,13 @@ export function pointsFor(item,t=0){
   if(motif==='arch'){
    x=-360+u*720;y=hole+gap*i-90*Math.exp(-x*x/28000)*(1+o*.25*Math.sin(x*.015+phase));
   }else if(motif==='saddle'){
-   x=-350+u*700;y=(i-(n-1)/2)*gap*1.6+60*Math.tanh(x/75)*Math.sin(x/180+rotation+phase*.15);
+   x=-350+u*700;y=(i-(n-1)/2)*gap*1.6+60*Math.tanh(x/75)*Math.sin(x/180+rotation+.15*Math.sin(phase));
   }else{
    let theta=a,rr=r;
    if(motif==='whorl'){theta=a+.55*Math.log(1+r/25)+rotation;rr=r*(1+.1*o*Math.sin(3*a+phase));}
    if(motif==='loop'){rr=r*(1+.36*Math.cos(a)+.08*o*Math.sin(3*a+phase));theta=a+rotation;}
    if(motif==='double'){rr=r*(1+.48*Math.cos(2*a));theta=a+rotation;}
-   if(motif==='rosette'){rr=r*(1+(.12+c*.16)*Math.cos(5*a+phase*.25));theta=a+rotation;}
+   if(motif==='rosette'){rr=r*(1+(.12+c*.16)*Math.cos(5*a+.25*Math.sin(phase)));theta=a+rotation;}
    x=rr*Math.cos(theta);y=rr*Math.sin(theta)*(motif==='loop'?.72:1);
   }
   const distance=Math.hypot(x,y),influence=Math.exp(-distance*distance/100000);
@@ -30,6 +30,8 @@ export function pointsFor(item,t=0){
   y+=e*14*influence*Math.sin(phase)*Math.cos(x*.018+seed);
   x+=cx;y+=cy;
   for(const g of gestures){const dx=x-g.x,dy=y-g.y,w=Math.exp(-(dx*dx+dy*dy)/(g.radius*g.radius));x+=g.dx*w;y+=g.dy*w;}
-  return [x,y];
+  const scale=1+((p.breath??50)-50)/150,angle=((p.turn??50)-50)/100*Math.PI;
+  const rx=(x-cx)*scale,ry=(y-cy)*scale;
+  return [cx+rx*Math.cos(angle)-ry*Math.sin(angle)+((p.driftX??50)-50)*2,cy+rx*Math.sin(angle)+ry*Math.cos(angle)+((p.driftY??50)-50)*2];
  }));
 }
