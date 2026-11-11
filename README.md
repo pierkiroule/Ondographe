@@ -63,3 +63,8 @@ L’Ondothèque utilise localStorage ; exporter les projets ou la collection pou
 une conservation indépendante du navigateur. Un projet JSON peut être réimporté
 et repris depuis l’Ondothèque. Les anciennes œuvres sont compatibles avec les
 nouveaux motifs et peuvent être reprises pour édition.
+
+Les aperçus animés de l’atelier, du labo et de l’Ondothèque partagent la même
+horloge de lecture. L’Ondothèque propose lecture/pause et retour au début pour
+chaque animation. Le temps se suspend quand l’onglet du navigateur est masqué,
+puis reprend sans saut au retour. Les aperçus fixes restent statiques.
