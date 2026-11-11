@@ -8,9 +8,11 @@ function basePoint(u,i,n,seed,notes,params){
  const a=u*Math.PI*2,r=9+i*245/n,noise=seed*.00001,o=params.organic/100,c=params.complexity/100;
  const ring=notes.some(x=>["🌳","💧","🐚"].includes(x));
  const branches=notes.some(x=>["🍄","🕸️"].includes(x));
+ // Une seule topologie par œuvre : aucun mélange de motifs entre les lignes.
+ // Les emojis modulent la forme dominante au lieu d'ajouter des couches concurrentes.
  let x,y;
  if(branches&&!ring){let theta=i/n*Math.PI*2+noise+o*.3*Math.sin(u*8+i);x=300+u*310*Math.cos(theta);y=300+u*310*Math.sin(theta);}
- else if(ring||i%3===0){let rr=r*(1+o*.16*Math.sin(a*3+noise+i*.06)+c*.06*Math.cos(a*5-noise));if(notes.includes("🐚"))rr=8+u*280+i*3,x=300+rr*Math.cos(a*2.7+noise),y=300+rr*Math.sin(a*2.7+noise);else x=300+rr*Math.cos(a),y=300+rr*Math.sin(a)*.88;}
+ else if(ring){let rr=r*(1+o*.16*Math.sin(a*3+noise+i*.06)+c*.06*Math.cos(a*5-noise));if(notes.includes("🐚"))rr=8+u*280+i*3,x=300+rr*Math.cos(a*2.7+noise),y=300+rr*Math.sin(a*2.7+noise);else x=300+rr*Math.cos(a),y=300+rr*Math.sin(a)*.88;}
  else{x=-70+u*740;y=35+i*530/n+o*30*Math.sin(x*.021+i*.13+noise);}
  return[x,y];
 }
