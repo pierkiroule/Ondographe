@@ -35,17 +35,15 @@ function pointsFor(item,t=0){
 }
 const path=line=>line.map(([x,y],i)=>(i?"L":"M")+x.toFixed(2)+" "+y.toFixed(2)).join(" ");
 function svgFor(item,animated=false,mono=false){
- const bg=item.palette,p=item.params,ink=mono?"#000000":"#ffffff",shade=mono?"#000000":"#354a48";
  const frames=animated?Array.from({length:25},(_,i)=>pointsFor(item,i*30/24)):null;
  const lines=pointsFor(item,0);
+ const stroke=mono?"#000000":"#354a48";
  let s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">';
- if(!mono)s+='<rect width="600" height="600" fill="'+bg+'"/>';
- for(const [col,offset,op] of [[shade,1.4,mono?1:p.relief/130],[ink,-.7,mono?0:p.relief/100]]){
- if(op<=0)continue;
- s+='<g fill="none" stroke="'+col+'" stroke-width="'+(mono?1.5:1.4)+'" opacity="'+op+'" stroke-linecap="round" transform="translate(0 '+offset+')">';
- lines.forEach((line,i)=>{s+='<path d="'+path(line)+'">';if(animated)s+='<animate attributeName="d" values="'+frames.map(f=>path(f[i])).join(";")+'" dur="30s" repeatCount="indefinite"/>';s+='</path>';});s+='</g>';
- }
- return s+'</svg>';
+ if(!mono)s+='<rect width="600" height="600" fill="'+item.palette+'"/>';
+ s+='<g fill="none" stroke="'+stroke+'" stroke-width="'+(0.7+item.params.relief/100).toFixed(2)+'" opacity=".75" stroke-linecap="round" stroke-linejoin="round">';
+ lines.forEach((line,i)=>{s+='<path d="'+path(line)+'">';if(animated)s+='<animate attributeName="d" values="'+frames.map(f=>path(f[i])).join(";")+'" dur="30s" repeatCount="indefinite"/>';s+='</path>';});
+ s+='</g></svg>';
+ return s;
 }
 const download=(text,name,type="image/svg+xml")=>{const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)};
 const defaults={organic:65,density:50,energy:40,complexity:45,relief:70};
@@ -56,7 +54,7 @@ function Wave({item,edit,onSculpt}){
  const onMove=e=>{if(!drag.current||!edit)return;const r=ref.current.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*600,y=(e.clientY-r.top)/r.height*600,prev=drag.current;onSculpt(item.id,{x,y,dx:(x-prev.x)*1.6,dy:(y-prev.y)*1.6,radius:100});drag.current={x,y}};
  return <svg ref={ref} viewBox="0 0 600 600" className={edit?"editable":""} onPointerDown={e=>{if(!edit)return;const r=e.currentTarget.getBoundingClientRect();drag.current={x:(e.clientX-r.left)/r.width*600,y:(e.clientY-r.top)/r.height*600};e.currentTarget.setPointerCapture(e.pointerId)}} onPointerMove={onMove} onPointerUp={()=>drag.current=null} onPointerCancel={()=>drag.current=null}>
  <rect width="600" height="600" fill={item.palette}/>
- {paths.map((d,i)=><g key={i} fill="none" strokeLinecap="round"><path d={d} stroke="#364842" strokeWidth="2.1" opacity={item.params.relief/160} transform="translate(0 1.4)"/><path d={d} stroke="#fff" strokeWidth="1.3" opacity={item.params.relief/100} transform="translate(0 -.6)"/></g>)}
+ <g fill="none" stroke="#354a48" strokeWidth={0.7+item.params.relief/100} opacity=".75" strokeLinecap="round" strokeLinejoin="round">{paths.map((d,i)=><path key={i} d={d}/>)}</g>
  </svg>;
 }
 export default function App(){
