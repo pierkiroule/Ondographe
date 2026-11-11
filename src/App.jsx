@@ -1,30 +1,62 @@
-import React,{useState,useEffect,useRef,useMemo,useId} from 'react';
-import Timeline from './Timeline';
-import {APPEARANCES,lineAppearance} from './appearance';
-import ResonanceLab from './ResonanceLab';
-import LibraryPreview from './LibraryPreview';
-import useAnimationClock from './useAnimationClock';
-import {animatedItem,PRESETS,presetAnimation} from './animation';
-import {MOTIFS,pointsFor,centerFor} from './geometry';
-import {path,svgFor,lineStyle,LINE_STYLES} from './rendering';
-const PAL=[['#b7cdd9','Bleu papier'],['#cadfe6','Brume'],['#e7dfd0','Ivoire'],['#cbd5bf','Sauge'],['#e8c6b5','Argile'],['#bdc9db','Lavande']];
-const defaults={organic:65,energy:40,complexity:45,spacing:11,hollow:35,centerX:300,centerY:300,lineWidth:1.6,waves:3};
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const createWork=()=>({id:crypto.randomUUID(),seed:Math.floor(Math.random()*1e8),name:'Empreinte du vivant',notes:['whorl'],palette:PAL[0][0],paper:true,lineStyle:'emboss',params:{...defaults},gestures:[],kind:'fixe',animation:{},preset:null});
-const download=(text,name,type='image/svg+xml')=>{const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)};
-const STEPS=['Composer','Résonance','Valider le fixe','Animer','Exporter'];
-function Wave({item,time=0,mode,onSculpt,onCenter,brush={size:100,intensity:60}}){
- const [cursor,setCursor]=useState(null);
- const ref=useRef(),drag=useRef(null),id=useId().replace(/[^a-z0-9]/gi,''),[cx,cy]=centerFor(item),style=lineStyle(item);
- const paths=useMemo(()=>pointsFor(item.kind==='animé'?animatedItem(item,time):item,item.kind==='animé'?time:0).map(path),[item,time]);
- const position=e=>{const r=ref.current.getBoundingClientRect();return {x:clamp((e.clientX-r.left)/r.width*600,0,600),y:clamp((e.clientY-r.top)/r.height*600,0,600)}};
- const move=e=>{if(!mode)return;const p=position(e);setCursor(p);if(!drag.current||!mode)return;const stroke=drag.current.stroke;if(mode==='center')onCenter(p.x,p.y);else onSculpt({x:p.x,y:p.y,dx:(p.x-drag.current.x)*brush.intensity/50,dy:(p.y-drag.current.y)*brush.intensity/50,radius:brush.size,stroke});drag.current={...p,stroke}};
- return <svg ref={ref} viewBox="0 0 600 600" role="img" aria-label="Votre empreinte" className={mode?'editable':''} onPointerDown={e=>{if(!mode||e.button!==0)return;e.preventDefault();drag.current={...position(e),stroke:crypto.randomUUID()};e.currentTarget.setPointerCapture(e.pointerId);if(mode==='center')onCenter(drag.current.x,drag.current.y)}} onPointerMove={move} onPointerLeave={()=>setCursor(null)} onPointerUp={()=>drag.current=null} onPointerCancel={()=>drag.current=null} onLostPointerCapture={()=>drag.current=null}>
- <defs><filter id={'relief'+id} x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0.8" dy="1.1" stdDeviation="0.5" floodColor="#405a66" floodOpacity="0.5"/></filter><filter id={'paper'+id}><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope="0.08"/></feComponentTransfer><feBlend in="SourceGraphic" mode="multiply"/></filter></defs>
- <rect width="600" height="600" fill={item.palette} filter={item.paper?`url(#paper${id})`:undefined}/>
- <g fill="none" stroke={style.stroke} strokeWidth={style.width} strokeDasharray={style.dash} strokeLinecap="round" strokeLinejoin="round" filter={style.emboss?`url(#relief${id})`:undefined}>{paths.map((d,i)=>{const a=item.kind==='animé'?lineAppearance(item.appearance,time,i,paths.length):{opacity:1,reveal:1};return <path key={i} d={d} opacity={a.opacity} pathLength={item.kind==='animé'&&item.appearance==='draw'?1:undefined} strokeDasharray={item.kind==='animé'&&item.appearance==='draw'?'1':undefined} strokeDashoffset={item.kind==='animé'&&item.appearance==='draw'?1-a.reveal:undefined}/>})}</g>
- {mode==='sculpt'&&cursor&&<circle cx={cursor.x} cy={cursor.y} r={brush.size} fill="none" stroke="#8a412b" strokeWidth=".8" strokeDasharray="4 4" pointerEvents="none"/>}
- {mode==='center'&&<g className="center-handle" pointerEvents="none" stroke="#8b412b" fill="none"><circle cx={cx} cy={cy} r="10"/><path d={`M${cx-18} ${cy}H${cx+18}M${cx} ${cy-18}V${cy+18}`}/></g>}
+import React,{useState,useEffect,useRef,useMemo} from "react";
+const EM=[["🌊","Onde"],["🌬️","Souffle"],["🌱","Croissance"],["🍄","Réseau"],["🐚","Spirale"],["🪶","Plume"],["🐦","Nuée"],["💧","Écho"],["🌳","Cernes"],["🕸️","Maillage"],["☁️","Brume"],["🪨","Strate"]];
+const PAL=["#CADFE6","#BDC9DB","#B0C4CC","#EDE1B5","#F0DC91","#E7CF98","#CBD5BF","#BFD9D0","#D6D9B6","#E8C6B5","#DFB097","#EDC6A1","#E7DFD0","#D3D2CA","#F0EDE5"];
+const ADJ=["secret","lent","sauvage","intime","suspendu","fragile","profond","vagabond","naissant"];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),rnd=()=>Math.floor(Math.random()*1e8);
+const make=(i,notes,palette,params)=>({id:crypto.randomUUID(),seed:rnd(),kind:i<3?"fixe":"animé",name:(["Le murmure","La mémoire","Les rides","Le souffle","La danse","L'éveil"][i])+" "+(EM.find(e=>e[0]===notes[0])?.[1].toLowerCase()||"du vivant"),notes:[...notes],palette,params:{...params},gestures:[],version:0});
+function basePoint(u,i,n,seed,notes,params){
+ const a=u*Math.PI*2,r=9+i*245/n,noise=seed*.00001,o=params.organic/100,c=params.complexity/100;
+ const ring=notes.some(x=>["🌳","💧","🐚"].includes(x));
+ const branches=notes.some(x=>["🍄","🕸️"].includes(x));
+ // Une seule topologie par œuvre : aucun mélange de motifs entre les lignes.
+ // Les emojis modulent la forme dominante au lieu d'ajouter des couches concurrentes.
+ let x,y;
+ if(branches&&!ring){let theta=i/n*Math.PI*2+noise+o*.3*Math.sin(u*8+i);x=300+u*310*Math.cos(theta);y=300+u*310*Math.sin(theta);}
+ else if(ring){let rr=r*(1+o*.16*Math.sin(a*3+noise+i*.06)+c*.06*Math.cos(a*5-noise));if(notes.includes("🐚"))rr=8+u*280+i*3,x=300+rr*Math.cos(a*2.7+noise),y=300+rr*Math.sin(a*2.7+noise);else x=300+rr*Math.cos(a),y=300+rr*Math.sin(a)*.88;}
+ else{x=-70+u*740;y=35+i*530/n+o*30*Math.sin(x*.021+i*.13+noise);}
+ return[x,y];
+}
+function pointsFor(item,t=0){
+ const {notes,params,seed,gestures}=item,n=12+Math.round(params.density*.18),P=64,phase=t/30*Math.PI*2,energy=params.energy/100,organic=params.organic/100;
+ return Array.from({length:n},(_,i)=>Array.from({length:P+1},(_,j)=>{
+ let [x,y]=basePoint(j/P,i,n,seed,notes,params);const dx=x-300,dy=y-300,f=Math.exp(-(dx*dx+dy*dy)/65000);
+ if(notes.includes("🌊"))y+=organic*17*Math.sin(x*.027+phase+i*.11);
+ if(notes.includes("🌬️"))x+=energy*45*Math.sin(phase+dy*.015);
+ if(notes.includes("🌱")){x+=dx*.13*energy*Math.sin(phase);y+=dy*.13*energy*Math.sin(phase);}
+ if(notes.includes("🐦")){x+=energy*24*Math.sin(phase+dy*.014);y+=energy*24*Math.cos(phase+dx*.014);}
+ if(notes.includes("☁️")){x+=energy*30*Math.sin(phase);y+=energy*25*Math.cos(phase);}
+ if(notes.includes("🪶"))y+=organic*16*Math.sin(j*.14+i*.1+phase);
+ if(notes.includes("💧")){let v=energy*.1*Math.sin(phase*2-Math.hypot(dx,dy)*.026);x+=dx*v;y+=dy*v;}
+ if(notes.includes("🪨"))y+=organic*9*Math.cos(x*.04+i*.2);
+ x+=energy*25*f*Math.sin(phase+dy*.017+seed);y+=energy*25*f*Math.cos(phase+dx*.017+seed);
+ for(const g of gestures){const ax=x-g.x,ay=y-g.y,w=Math.exp(-(ax*ax+ay*ay)/(g.radius*g.radius));x+=g.dx*w;y+=g.dy*w;}
+ return[x,y];
+ }));
+}
+const path=line=>line.map(([x,y],i)=>(i?"L":"M")+x.toFixed(2)+" "+y.toFixed(2)).join(" ");
+function svgFor(item,animated=false,mono=false){
+ const bg=item.palette,p=item.params,ink=mono?"#000000":"#ffffff",shade=mono?"#000000":"#354a48";
+ const frames=animated?Array.from({length:25},(_,i)=>pointsFor(item,i*30/24)):null;
+ const lines=pointsFor(item,0);
+ let s='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">';
+ if(!mono)s+='<rect width="600" height="600" fill="'+bg+'"/>';
+ for(const [col,offset,op] of [[shade,1.4,mono?1:p.relief/130],[ink,-.7,mono?0:p.relief/100]]){
+ if(op<=0)continue;
+ s+='<g fill="none" stroke="'+col+'" stroke-width="'+(mono?1.5:1.4)+'" opacity="'+op+'" stroke-linecap="round" transform="translate(0 '+offset+')">';
+ lines.forEach((line,i)=>{s+='<path d="'+path(line)+'">';if(animated)s+='<animate attributeName="d" values="'+frames.map(f=>path(f[i])).join(";")+'" dur="30s" repeatCount="indefinite"/>';s+='</path>';});s+='</g>';
+ }
+ return s+'</svg>';
+}
+const download=(text,name,type="image/svg+xml")=>{const url=URL.createObjectURL(new Blob([text],{type})),a=document.createElement("a");a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500)};
+const defaults={organic:65,density:50,energy:40,complexity:45,relief:70};
+function Wave({item,edit,onSculpt}){
+ const ref=useRef(),drag=useRef(null),[tick,setTick]=useState(0);
+ useEffect(()=>{if(item.kind!=="animé")return;let raf,active=true;const loop=()=>{if(!active)return;setTick(v=>v+1);raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop);return()=>{active=false;cancelAnimationFrame(raf)}},[item.kind]);
+ const paths=useMemo(()=>pointsFor(item,item.kind==="animé"?(performance.now()/1000)%30:0).map(path),[item,tick]);
+ const onMove=e=>{if(!drag.current||!edit)return;const r=ref.current.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*600,y=(e.clientY-r.top)/r.height*600,prev=drag.current;onSculpt(item.id,{x,y,dx:(x-prev.x)*1.6,dy:(y-prev.y)*1.6,radius:100});drag.current={x,y}};
+ return <svg ref={ref} viewBox="0 0 600 600" className={edit?"editable":""} onPointerDown={e=>{if(!edit)return;const r=e.currentTarget.getBoundingClientRect();drag.current={x:(e.clientX-r.left)/r.width*600,y:(e.clientY-r.top)/r.height*600};e.currentTarget.setPointerCapture(e.pointerId)}} onPointerMove={onMove} onPointerUp={()=>drag.current=null} onPointerCancel={()=>drag.current=null}>
+ <rect width="600" height="600" fill={item.palette}/>
+ {paths.map((d,i)=><g key={i} fill="none" strokeLinecap="round"><path d={d} stroke="#364842" strokeWidth="2.1" opacity={item.params.relief/160} transform="translate(0 1.4)"/><path d={d} stroke="#fff" strokeWidth="1.3" opacity={item.params.relief/100} transform="translate(0 -.6)"/></g>)}
  </svg>;
 }
 function Range({label,value,min,max,step=1,onChange,unit=''}){return <label className="range-label"><span>{label}<output>{Math.round(value*10)/10}{unit}</output></span><input aria-label={label} type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(+e.target.value)}/></label>}
